@@ -7,64 +7,93 @@
     <link rel="stylesheet" href="theme.css" />
   </head>
   <body>
-    <main class="phone">
-      <nav class="detail-nav">
-        <a class="back-link" href="view-1.html">← &nbsp; Journeys</a>
-        <button class="icon-button" aria-label="Notifications">♧</button>
-      </nav>
+    <main class="phone detail-screen">
+      <section class="detail-map" aria-label="Route map from Union Church to Guilford Elementary">
+        <div class="map-road road-vertical"></div>
+        <div class="map-road road-horizontal"></div>
+        <div class="map-road road-short"></div>
+        <span class="detail-map-label label-commission">Commission</span>
+        <span class="detail-map-label label-park">Trampoline Park</span>
+        <span class="detail-map-label label-monarch">Monarch Mills<br />Apartments</span>
+        <span class="detail-map-label label-school">Guilford<br />Elementary School</span>
 
-      <section class="profile-card">
-        <div class="avatar large">JW</div>
-        <div class="profile-copy">
-          <h1>Josh Williams</h1>
-          <p class="profile-meta">Greeters Team | 6AM Bible Study Group Host</p>
-          <p class="muted">● I love my church</p>
-        </div>
+        <svg class="route-path" viewBox="0 0 390 450" aria-hidden="true">
+          <path d="M327 169 L313 202 L204 146 L167 131 L100 126 L81 187 L76 250 L76 397 L106 405" />
+        </svg>
+        <span class="route-origin"></span>
+        <span class="route-shuttle">▰ <strong>2 min</strong><small>0.6 miles</small></span>
+        <span class="route-destination"></span>
+
+        <section class="map-profile">
+          <div class="avatar map-avatar">UC</div>
+          <div>
+            <h1>Josh Williams</h1>
+            <p>Greeters Team</p>
+          </div>
+        </section>
+
+        <span class="status map-status">In transit</span>
       </section>
 
-      <section class="detail-card">
-        <div class="route-heading">
-          <div class="eyebrow">Current route</div>
-          <button class="icon-button" aria-label="Change route">⌄</button>
-        </div>
-        <h2 class="detail-title">Union Church <span class="muted">to</span> Guilford Elementary</h2>
-        <div class="metrics">
-          <div class="metric">Duration<strong>15 min</strong></div>
-          <div class="metric">Distance<strong>3.2 mi</strong></div>
-          <div class="metric">Updated<strong>2 min ago</strong></div>
-        </div>
-        <div class="journey-timing">
-          <div class="time-block"><strong>09:00</strong><span>Departure</span></div>
-          <div class="timing-progress">
-            <div class="timing-message">15 mins remaining</div>
-            <div class="progress"><span class="progress-fill"></span><span class="progress-dot">▶</span></div>
-          </div>
-          <div class="time-block"><strong>09:45</strong><span>Arrival</span></div>
-        </div>
-        <div class="map" role="img" aria-label="Simplified route map from Union Church to Guilford Elementary">
-          <span class="map-label top">Sanusi Fafunwa St</span>
-          <span class="map-label middle">Ikoyi Park</span>
-          <span class="map-route"></span>
-          <span class="shuttle-marker"></span>
-          <span class="destination-marker">●</span>
-        </div>
-        <div class="detail-waitlist row">
-          <div class="waitlist">
-            <div class="avatar-stack"><span class="avatar green">FA</span><span class="avatar blue">A</span><span class="avatar lilac">S</span></div>
-            <span class="wait-copy">3 people waiting to be picked up</span>
-          </div>
-          <button class="pickup active" aria-label="Request pickup">＋</button>
-        </div>
-      </section>
+      <section class="route-sheet">
+        <header class="sheet-route-header">
+          <a class="sheet-back" href="view-1.html" aria-label="Back to journeys">‹</a>
+          <h2>Union Church <span>→</span> Guilford Elementary</h2>
+        </header>
 
-      <section class="driver-card">
-        <div class="avatar">JD</div>
-        <div class="person-copy">
-          <div class="eyebrow">Operating the shuttle</div>
-          <div class="person-name">John</div>
-          <div class="person-role">Driver</div>
+        <div class="sheet-body">
+          <section class="sheet-timing">
+            <div class="sheet-time"><strong>09:00</strong><span>Departure</span></div>
+            <div class="sheet-progress" aria-label="Route progress"><span></span><i>▶</i></div>
+            <div class="sheet-time end"><strong>09:03</strong><span>Arrival</span></div>
+          </section>
+
+          <section class="sheet-row passenger-summary">
+            <div class="avatar-stack compact">
+              <span class="avatar green">FA</span>
+              <span class="avatar blue">A</span>
+              <span class="avatar lilac">S</span>
+            </div>
+            <span class="wait-copy">3 people picked up and in transit</span>
+          </section>
+
+          <section class="sheet-section comments-preview">
+            <header class="section-row">
+              <h3>Comments (2)</h3>
+              <button class="mini-add" aria-label="Add comment">+</button>
+              <span class="collapse-control">⌃</span>
+            </header>
+            <div class="comment-list">
+              <article class="comment">
+                <span class="comment-avatar blue"></span>
+                <p><strong>Josh Williams</strong><span>I’m coming...</span></p>
+              </article>
+              <article class="comment">
+                <span class="comment-avatar lilac"></span>
+                <p><strong>John Smith (Driver)</strong><span>Okay, I’ll wait for you</span></p>
+              </article>
+              <span class="comment-scroll"></span>
+            </div>
+          </section>
+
+          <section class="sheet-section schedule-preview">
+            <header class="section-row">
+              <h3>Schedule a later pick up</h3>
+              <button class="mini-add" aria-label="Schedule pickup">+</button>
+            </header>
+            <div class="schedule-card">
+              <div class="schedule-time"><span>−</span><strong>10:40 am</strong><i>⌃</i></div>
+              <p><strong>Best pick up time</strong> 10:45am</p>
+              <small>You and 5 others are scheduled...</small>
+            </div>
+          </section>
+
+          <section class="sheet-driver">
+            <div class="avatar driver-avatar">JS</div>
+            <div class="driver-copy"><strong>John Smith</strong><span>Shuttle Driver</span></div>
+            <button class="call-driver" aria-label="Call driver">●</button>
+          </section>
         </div>
-        <button class="icon-button" aria-label="Message driver">◯</button>
       </section>
     </main>
   </body>
