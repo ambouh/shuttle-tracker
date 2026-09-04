@@ -20,6 +20,12 @@ The application should automate the shuttle lifecycle based primarily on the phy
 
 The initial product is intended to be extremely simple for riders: open the app, understand what the shuttle is doing, and request pickup.
 
+The underlying platform should support multiple transportation organizations.
+Union Church is the only organization exposed in Phase 1, but organization
+ownership must be established before the rider UI and Convex schema so another
+company can later manage its own users, shuttles, locations, and Journeys
+without sharing operational data with another organization.
+
 ---
 
 # 2. Users — Who is this for?
@@ -89,6 +95,27 @@ A future phase can replace or supplement guest identities with:
 
 The data model should therefore distinguish between an application's internal user ID and the authentication provider used to identify that person.
 
+## Organizations and roles
+
+Every person is represented by the same User model. A User has one role:
+
+```text
+guest
+rider
+driver
+admin
+```
+
+A guest is not a registered member of an organization and therefore has no
+organization ID. A rider, driver, or admin belongs to one organization. This
+initial model deliberately supports one organization per registered user; a
+many-organization membership model may be introduced later if the product needs
+the same person to hold roles in multiple organizations.
+
+The role controls which product surfaces may be visible or authorized. Guest
+identity may still begin as a locally recognized first and last name, but a
+guest is a User rather than a separate GuestUser entity.
+
 ---
 
 # 3. Features — What does the MVP need?
@@ -98,14 +125,22 @@ The data model should therefore distinguish between an application's internal us
 The system will be organized around:
 
 ```text
-Journey
-   ↓
-Route Legs
-   ↓
-Shuttle location + route state
-   ↓
-Waitlists + ETA + rider UI
+Organization
+   ├── Users
+   ├── Shuttles
+   ├── Locations
+   └── Journeys
+          ↓
+       Route Legs
+          ↓
+       Shuttle location + route state
+          ↓
+       Waitlists + ETA + rider UI
 ```
+
+The Organization is the tenant boundary. Journeys, Shuttles, and Locations
+store an `organizationId`. Route Legs inherit the boundary through their
+Journey, while tracking records inherit it through their Shuttle.
 
 ### Journey
 
@@ -772,7 +807,40 @@ This is one of the reasons Journey and Route Leg must remain separate concepts.
 
 # 4. Data — What are we storing?
 
-The application should use a data model capable of supporting multiple Journeys, multiple Route Legs, multiple tracking providers, and future authenticated users.
+The application should use a data model capable of supporting multiple
+organizations, multiple Journeys, multiple Route Legs, multiple tracking
+providers, and future authenticated users. Every organization-scoped backend
+read and mutation must enforce its organization boundary.
+
+## Organization
+
+Represents one company, church, or transportation operator using Shuttle
+Tracker.
+
+Possible fields:
+
+```text
+id
+slug
+active
+details
+createdAt
+updatedAt
+```
+
+`details` is an embedded Organization Details value containing:
+
+```text
+displayName
+description
+logoUrl
+logoAltText
+fallbackInitials
+```
+
+The organization image appears inside the circular header avatar. The words
+`Shuttle Tracker` remain a separate product label. Full tenant-controlled color
+or typography customization is deferred.
 
 ## User
 
@@ -782,12 +850,15 @@ Possible fields:
 
 ```text
 id
+organizationId
 firstName
 lastName
-userType
+role
+createdAt
+updatedAt
 ```
 
-Possible user types later:
+Roles:
 
 ```text
 guest
@@ -796,18 +867,10 @@ driver
 admin
 ```
 
-Phase 1 users will primarily be guests.
-
-A Phase 1 guest extends the base User with a guest-facing name and optional
-phone number:
-
-```text
-name
-phoneNumber
-```
-
-Authentication-provider links and device-local storage payloads will be defined
-when their owning features are specified rather than added to the base User now.
+`organizationId` is null for a guest and required for a rider, driver, or admin.
+Phase 1 users will primarily be guests. Authentication-provider links and the
+device-local guest payload will be defined by their owning features rather than
+creating a second GuestUser entity.
 
 ---
 
@@ -819,7 +882,9 @@ Possible fields:
 
 ```text
 id
+organizationId
 name
+activeDriverId
 activeTrackingProvider
 tracking
 createdAt
@@ -827,6 +892,9 @@ updatedAt
 ```
 
 The **Shuttle**, not a person's phone, is the primary tracked entity.
+
+`activeDriverId` is nullable and, when present, must reference a driver in the
+same organization as the Shuttle.
 
 The nullable current tracking snapshot contains:
 
@@ -850,6 +918,7 @@ Possible fields:
 
 ```text
 id
+organizationId
 name
 description
 active
@@ -903,12 +972,15 @@ Arrival/completion is handled as an event rather than a persistent rider-facing 
 
 ## Location
 
+Each Location belongs to one organization.
+
 Represents a reusable physical point.
 
 Possible fields:
 
 ```text
 id
+organizationId
 name
 address
 latitude
@@ -1064,6 +1136,7 @@ It is particularly appropriate for the real-time nature of the application.
 
 Convex will store and synchronize information such as:
 
+- Organizations and organization details
 - Journeys
 - Route Legs
 - Users
@@ -1221,6 +1294,11 @@ The user should not need multiple pages or forms to request the shuttle.
 
 The main Journey view should show the Route Legs as cards.
 
+The header should show the active organization's image inside a circular avatar,
+falling back to its initials when no image exists. `Shuttle Tracker` is a
+separate product label beside that avatar rather than part of the organization
+image.
+
 Each card should emphasize, in roughly this priority:
 
 ```text
@@ -1324,6 +1402,8 @@ Phase 1 delivers the **Sunday Shuttle rider experience**.
 It includes:
 
 ```text
+One organization: Union Church
+
 One Journey
 
 Union Church → Guilford Elementary

@@ -2,9 +2,11 @@ import type {
   Coordinates,
   DistanceMeters,
   LocationUpdateId,
+  OrganizationId,
   ShuttleId,
   Timestamp,
   TrackingProviderConfigurationId,
+  UserId,
 } from "./primitives";
 
 export type ShuttleTrackingStatus = "UNAVAILABLE" | "CURRENT" | "STALE";
@@ -21,6 +23,8 @@ export interface ShuttleTrackingSnapshot {
 
 export interface Shuttle {
   id: ShuttleId;
+  organizationId: OrganizationId;
+  activeDriverId: UserId | null;
   name: string;
   activeTrackingProvider: TrackingProvider | null;
   tracking: ShuttleTrackingSnapshot | null;

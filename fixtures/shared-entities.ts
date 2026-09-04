@@ -1,10 +1,11 @@
-import type { GuestUser, Location, Shuttle, User } from "@/types/domain";
+import type { Location, Shuttle, User } from "@/types/domain";
 
 import { FIXTURE_IDS } from "./ids";
 import { REFERENCE_TIMESTAMPS } from "./reference-time";
 
 export const UNION_CHURCH = {
   id: FIXTURE_IDS.locations.unionChurch,
+  organizationId: FIXTURE_IDS.organization,
   name: "Union Church",
   address: "7195 Oakland Mills Rd, Columbia, MD 21046",
   latitude: 39.1731151,
@@ -13,6 +14,7 @@ export const UNION_CHURCH = {
 
 export const GUILFORD_ELEMENTARY = {
   id: FIXTURE_IDS.locations.guilfordElementary,
+  organizationId: FIXTURE_IDS.organization,
   name: "Guilford Elementary School",
   address: "7335 Oakland Mills Rd, Columbia, MD 21046",
   latitude: 39.169404,
@@ -21,76 +23,96 @@ export const GUILFORD_ELEMENTARY = {
 
 export const JOHN_SMITH = {
   id: FIXTURE_IDS.users.johnSmith,
+  organizationId: FIXTURE_IDS.organization,
   firstName: "John",
   lastName: "Smith",
-  userType: "driver",
+  phoneNumber: null,
+  role: "driver",
+  createdAt: REFERENCE_TIMESTAMPS.createdAt,
+  updatedAt: REFERENCE_TIMESTAMPS.updatedAt,
 } satisfies User;
 
 export const JOSH_WILLIAMS = {
   id: FIXTURE_IDS.users.joshWilliams,
+  organizationId: null,
   firstName: "Josh",
   lastName: "Williams",
-  userType: "guest",
-  name: "Josh Williams",
-  phoneNumber: null,
-} satisfies GuestUser;
+  phoneNumber: "+1-410-555-0101",
+  role: "guest",
+  createdAt: REFERENCE_TIMESTAMPS.createdAt,
+  updatedAt: REFERENCE_TIMESTAMPS.updatedAt,
+} satisfies User;
 
 export const GUEST_RIDERS = [
   JOSH_WILLIAMS,
   {
     id: FIXTURE_IDS.users.faithAnderson,
+    organizationId: null,
     firstName: "Faith",
     lastName: "Anderson",
-    userType: "guest",
-    name: "Faith Anderson",
-    phoneNumber: null,
+    phoneNumber: "+1-410-555-0102",
+    role: "guest",
+    createdAt: REFERENCE_TIMESTAMPS.createdAt,
+    updatedAt: REFERENCE_TIMESTAMPS.updatedAt,
   },
   {
     id: FIXTURE_IDS.users.alexMorgan,
+    organizationId: null,
     firstName: "Alex",
     lastName: "Morgan",
-    userType: "guest",
-    name: "Alex Morgan",
-    phoneNumber: null,
+    phoneNumber: "+1-410-555-0103",
+    role: "guest",
+    createdAt: REFERENCE_TIMESTAMPS.createdAt,
+    updatedAt: REFERENCE_TIMESTAMPS.updatedAt,
   },
   {
     id: FIXTURE_IDS.users.samRivera,
+    organizationId: null,
     firstName: "Sam",
     lastName: "Rivera",
-    userType: "guest",
-    name: "Sam Rivera",
-    phoneNumber: null,
+    phoneNumber: "+1-410-555-0104",
+    role: "guest",
+    createdAt: REFERENCE_TIMESTAMPS.createdAt,
+    updatedAt: REFERENCE_TIMESTAMPS.updatedAt,
   },
   {
     id: FIXTURE_IDS.users.mayaChen,
+    organizationId: null,
     firstName: "Maya",
     lastName: "Chen",
-    userType: "guest",
-    name: "Maya Chen",
-    phoneNumber: null,
+    phoneNumber: "+1-410-555-0105",
+    role: "guest",
+    createdAt: REFERENCE_TIMESTAMPS.createdAt,
+    updatedAt: REFERENCE_TIMESTAMPS.updatedAt,
   },
   {
     id: FIXTURE_IDS.users.taylorBrown,
+    organizationId: null,
     firstName: "Taylor",
     lastName: "Brown",
-    userType: "guest",
-    name: "Taylor Brown",
-    phoneNumber: null,
+    phoneNumber: "+1-410-555-0106",
+    role: "guest",
+    createdAt: REFERENCE_TIMESTAMPS.createdAt,
+    updatedAt: REFERENCE_TIMESTAMPS.updatedAt,
   },
   {
     id: FIXTURE_IDS.users.chrisDavis,
+    organizationId: null,
     firstName: "Chris",
     lastName: "Davis",
-    userType: "guest",
-    name: "Chris Davis",
-    phoneNumber: null,
+    phoneNumber: "+1-410-555-0107",
+    role: "guest",
+    createdAt: REFERENCE_TIMESTAMPS.createdAt,
+    updatedAt: REFERENCE_TIMESTAMPS.updatedAt,
   },
-] satisfies GuestUser[];
+] satisfies User[];
 
 export const SUNDAY_SERVICE_USERS = [JOHN_SMITH, ...GUEST_RIDERS] satisfies User[];
 
 export const UNION_SHUTTLE = {
   id: FIXTURE_IDS.shuttle,
+  organizationId: FIXTURE_IDS.organization,
+  activeDriverId: FIXTURE_IDS.users.johnSmith,
   name: "Union Shuttle 1",
   activeTrackingProvider: "AIRTAG",
   tracking: {

@@ -74,6 +74,7 @@ export const OUTBOUND_COMMENTS = [
 
 export const SUNDAY_SERVICE_JOURNEY = {
   id: FIXTURE_IDS.journey,
+  organizationId: FIXTURE_IDS.organization,
   name: "Sunday Service",
   description: "Sunday shuttle service between Union Church and Guilford Elementary School.",
   active: true,

@@ -8,6 +8,19 @@ import {
 } from "./sunday-service";
 
 describe("canonical Sunday Service fixture", () => {
+  it("places the journey and its operational entities under Union", () => {
+    const { journey, locations, shuttle } = SUNDAY_SERVICE_FIXTURE;
+
+    expect(journey.organizationId).toBe(FIXTURE_IDS.organization);
+    expect(shuttle.organizationId).toBe(FIXTURE_IDS.organization);
+    expect(shuttle.activeDriverId).toBe(FIXTURE_IDS.users.johnSmith);
+    expect(
+      locations.every(
+        ({ organizationId }) => organizationId === journey.organizationId,
+      ),
+    ).toBe(true);
+  });
+
   it("orders reciprocal route legs consistently", () => {
     const { journey, routeLegs } = SUNDAY_SERVICE_FIXTURE;
 

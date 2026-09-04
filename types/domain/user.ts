@@ -1,16 +1,14 @@
-import type { UserId } from "./primitives";
+import type { OrganizationId, Timestamp, UserId } from "./primitives";
 
-export type UserType = "guest" | "rider" | "driver" | "admin";
+export type UserRole = "guest" | "rider" | "driver" | "admin";
 
 export interface User {
   id: UserId;
+  organizationId: OrganizationId | null;
   firstName: string;
   lastName: string;
-  userType: UserType;
-}
-
-export interface GuestUser extends User {
-  userType: "guest";
-  name: string;
   phoneNumber: string | null;
+  role: UserRole;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 }

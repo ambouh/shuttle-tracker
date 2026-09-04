@@ -6,6 +6,7 @@ export type {
   JourneyId,
   LocationId,
   LocationUpdateId,
+  OrganizationId,
   ProgressRatio,
   RouteLegCommentId,
   RouteLegId,
@@ -15,6 +16,7 @@ export type {
   UserId,
   WaitlistEntryId,
 } from "./primitives";
+export type { Organization, OrganizationDetails } from "./organization";
 export type { RouteLegComment } from "./comment";
 export type { Journey, Location, RouteLeg, RouteStatus } from "./journey";
 export type {
@@ -30,5 +32,5 @@ export type {
   TrackingProvider,
   TrackingProviderConfiguration,
 } from "./tracking";
-export type { GuestUser, User, UserType } from "./user";
+export type { User, UserRole } from "./user";
 export type { WaitlistEntry } from "./waitlist";

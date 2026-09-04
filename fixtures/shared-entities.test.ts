@@ -25,10 +25,12 @@ describe("Sunday Service fixture foundations", () => {
     expect(SUNDAY_SERVICE_LOCATIONS).toHaveLength(2);
     expect(UNION_CHURCH).toMatchObject({
       id: FIXTURE_IDS.locations.unionChurch,
+      organizationId: FIXTURE_IDS.organization,
       address: "7195 Oakland Mills Rd, Columbia, MD 21046",
     });
     expect(GUILFORD_ELEMENTARY).toMatchObject({
       id: FIXTURE_IDS.locations.guilfordElementary,
+      organizationId: FIXTURE_IDS.organization,
       address: "7335 Oakland Mills Rd, Columbia, MD 21046",
     });
   });
@@ -36,14 +38,26 @@ describe("Sunday Service fixture foundations", () => {
   it("keeps driver and guest identities distinct", () => {
     const userIds = SUNDAY_SERVICE_USERS.map(({ id }) => id);
 
-    expect(JOHN_SMITH.userType).toBe("driver");
-    expect(GUEST_RIDERS.every(({ userType }) => userType === "guest")).toBe(true);
+    expect(JOHN_SMITH).toMatchObject({
+      organizationId: FIXTURE_IDS.organization,
+      role: "driver",
+    });
+    expect(
+      GUEST_RIDERS.every(
+        ({ organizationId, phoneNumber, role }) =>
+          organizationId === null &&
+          phoneNumber !== null &&
+          role === "guest",
+      ),
+    ).toBe(true);
     expect(new Set(userIds).size).toBe(userIds.length);
   });
 
   it("gives the shuttle a normalized current tracking snapshot", () => {
     expect(UNION_SHUTTLE).toMatchObject({
       id: FIXTURE_IDS.shuttle,
+      organizationId: FIXTURE_IDS.organization,
+      activeDriverId: FIXTURE_IDS.users.johnSmith,
       activeTrackingProvider: "AIRTAG",
       tracking: {
         status: "CURRENT",

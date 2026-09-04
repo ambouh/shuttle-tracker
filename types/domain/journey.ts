@@ -3,6 +3,7 @@ import type {
   DistanceMeters,
   JourneyId,
   LocationId,
+  OrganizationId,
   RouteLegId,
   Timestamp,
 } from "./primitives";
@@ -12,6 +13,7 @@ export type RouteStatus = "NOT_STARTED" | "DEPARTING" | "IN_TRANSIT";
 
 export interface Location {
   id: LocationId;
+  organizationId: OrganizationId;
   name: string;
   address: string;
   latitude: number;
@@ -20,6 +22,7 @@ export interface Location {
 
 export interface Journey {
   id: JourneyId;
+  organizationId: OrganizationId;
   name: string;
   description: string | null;
   active: boolean;

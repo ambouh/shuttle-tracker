@@ -13,23 +13,30 @@ Union Dream Team riders lack a simple, reliable way to know where the shuttle is
 when it will depart or arrive, or whether the driver knows they are waiting. The
 product replaces uncertainty and manual communication with a live,
 location-driven rider experience that makes shuttle state and pickup eligibility
-understandable within seconds.
+understandable within seconds. Shuttle Tracker is structurally multi-tenant:
+Union Church is the only Phase 1 organization, while ownership boundaries allow
+other transportation organizations to use the platform later without sharing
+operational data.
 
 ## Users
 
-- **Guest rider (Phase 1)** - enters a first and last name when first requesting
-  pickup, receives an application-generated identity stored on the device, and
-  views routes, ETA, progress, and waitlists without formal authentication.
-- **Driver (future authenticated role)** - operates a shuttle and may provide
-  phone GPS, receive waitlist information, and use recovery controls.
-- **Administrator (future authenticated role)** - manages journeys, route legs,
-  locations, ordering, geofences, and operational configuration.
-- **Authenticated rider (future)** - may connect Slack or Google identity while
-  retaining the application's internal user identity.
+- **Guest (Phase 1)** - a User with role `guest` and no organization ID who
+  enters a first and last name when first requesting pickup, receives an
+  application-generated identity stored on the device, and views routes, ETA,
+  progress, and waitlists without formal authentication.
+- **Rider** - a registered User belonging to one organization who uses its
+  shuttle services; formal authentication is future work.
+- **Driver** - a registered User belonging to one organization who operates an
+  assigned shuttle and may later provide phone GPS and recovery controls.
+- **Administrator** - a registered User belonging to one organization who may
+  later manage its users, journeys, locations, shuttles, and configuration.
 
-Shared journey, route, waitlist, location, and ETA state lives in Convex. Local
-device storage recognizes the Phase 1 guest only; clearing browser or PWA data
-may require the rider to enter their name again.
+Every person uses the same User model with role `guest`, `rider`, `driver`, or
+`admin`. The initial model allows one organization per registered User; a
+many-organization relationship is deferred until a real need exists. Shared
+journey, route, waitlist, location, and ETA state lives in Convex. Local device
+storage recognizes the Phase 1 guest only; clearing browser or PWA data may
+require the rider to enter their name again.
 
 ## Features
 
@@ -40,8 +47,14 @@ may require the rider to enter their name again.
 2. **Reference fixture data** - provide one internally consistent typed Sunday
    Service dataset with waitlists and comments for UI, state-engine, and later
    Convex seed use.
-3. **Journey overview** - deliver the approved functional View 1 with two route
-   cards, route state, timing, progress, waitlists, and pickup actions.
+3. **Tenant-aware journey overview** - establish organization ownership, then
+   deliver View 1 as two reviewable sub-features:
+   - **3a Organization tenancy foundation** - add organization/details and
+     role-based User contracts, scope journeys, shuttles, and locations, assign
+     the active driver, and update fixtures and tests.
+   - **3b Journey overview** - deliver the approved View 1 with organization
+     avatar, separate product label, route state, timing, progress, waitlists,
+     and pickup affordances.
 4. **Route detail preview** - deliver the approved nonfunctional View 2 behind a
    feature flag, visible for development and demonstrations but hidden by default
    in production.
@@ -103,42 +116,66 @@ database or external authentication provider.
 - `EntityId` (`string`) - opaque application identity.
 - `Timestamp` (`number`) - Unix time in milliseconds.
 - `Coordinates` - `{ latitude: number; longitude: number }`.
+- `OrganizationId` - opaque ID for one Shuttle Tracker tenant.
 - `RouteStatus` - `"NOT_STARTED" | "DEPARTING" | "IN_TRANSIT"`.
-- `UserType` - `"guest" | "rider" | "driver" | "admin"`.
+- `UserRole` - `"guest" | "rider" | "driver" | "admin"`.
 - `TrackingProvider` - initially `"AIRTAG" | "DRIVER_GPS"`.
+
+### Organization
+
+- `id` (`OrganizationId`)
+- `slug` (`string`)
+- `active` (`boolean`)
+- `details` (`OrganizationDetails`)
+- `createdAt` (`Timestamp`)
+- `updatedAt` (`Timestamp`)
+
+An Organization is the tenant boundary for Users, Shuttles, Locations, and
+Journeys. Union Church is the sole Phase 1 organization.
+
+### OrganizationDetails
+
+- `displayName` (`string`)
+- `description` (`string | null`)
+- `logoUrl` (`string | null`)
+- `logoAltText` (`string | null`)
+- `fallbackInitials` (`string`)
+
+Details are embedded in Organization. The logo or fallback initials appear in
+the circular header avatar; `Shuttle Tracker` remains a separate product label.
+Tenant-controlled colors and typography are deferred.
 
 ### User
 
 - `id` (`EntityId`)
+- `organizationId` (`Organization.id | null`)
 - `firstName` (`string`)
 - `lastName` (`string`)
-- `userType` (`UserType`)
-
-A user may own many `WaitlistEntry` and `RouteLegComment` records. Phase 1
-primarily creates guests.
-
-### GuestUser
-
-Extends `User` and narrows `userType` to `"guest"`.
-
-- `name` (`string`) - guest-facing display name.
 - `phoneNumber` (`string | null`)
+- `role` (`UserRole`)
+- `createdAt` (`Timestamp`)
+- `updatedAt` (`Timestamp`)
 
-Feature 5 owns the device-local subset used to recognize a guest. Future
-authentication features own provider-link contracts rather than changing this
-Feature 1 identity shape silently.
+A guest has a null organization ID; a rider, driver, or admin has one
+organization ID. A User may own many `WaitlistEntry` and `RouteLegComment`
+records. Feature 5 owns the device-local subset used to recognize a guest, and
+future authentication features own provider links.
 
 ### Shuttle
 
 - `id` (`EntityId`)
+- `organizationId` (`Organization.id`)
 - `name` (`string`)
+- `activeDriverId` (`User.id | null`)
 - `activeTrackingProvider` (`TrackingProvider | null`)
 - `tracking` (`ShuttleTrackingSnapshot | null`)
 - `createdAt` (`Timestamp`)
 - `updatedAt` (`Timestamp`)
 
-A shuttle has provider configurations and receives normalized location updates.
-The physical shuttle, not a driver or device, is the tracked entity.
+A shuttle belongs to one Organization, has provider configurations, and receives
+normalized location updates. `activeDriverId`, when present, must reference a
+driver in the same Organization. The physical shuttle, not a driver or device,
+is the tracked entity.
 
 ### ShuttleTrackingSnapshot
 
@@ -151,6 +188,7 @@ The physical shuttle, not a driver or device, is the tracked entity.
 ### Journey
 
 - `id` (`EntityId`)
+- `organizationId` (`Organization.id`)
 - `name` (`string`)
 - `description` (`string | null`)
 - `active` (`boolean`)
@@ -164,13 +202,15 @@ Sunday Service journey, while the model supports future journeys immediately.
 ### Location
 
 - `id` (`EntityId`)
+- `organizationId` (`Organization.id`)
 - `name` (`string`)
 - `address` (`string`)
 - `latitude` (`number`)
 - `longitude` (`number`)
 
-Initial records are Union Church at 7195 Oakland Mills Rd, Columbia, MD 21046,
-and Guilford Elementary School at 7335 Oakland Mills Rd, Columbia, MD 21046.
+Each Location belongs to one Organization. Initial Union records are Union
+Church at 7195 Oakland Mills Rd, Columbia, MD 21046, and Guilford Elementary
+School at 7335 Oakland Mills Rd, Columbia, MD 21046.
 
 ### RouteLeg
 
@@ -181,8 +221,8 @@ and Guilford Elementary School at 7335 Oakland Mills Rd, Columbia, MD 21046.
 - `departureLocationId` (`Location.id`)
 - `arrivalLocationId` (`Location.id`)
 - `status` (`RouteStatus`)
-- `departureGeofenceRadius` (`number`, distance unit `> TODO`)
-- `arrivalGeofenceRadius` (`number`, distance unit `> TODO`)
+- `departureGeofenceRadius` (`DistanceMeters`)
+- `arrivalGeofenceRadius` (`DistanceMeters`)
 - `waitlist` (`WaitlistEntry[]`, application-facing active list)
 - `comments` (`RouteLegComment[]`, application-facing active list)
 - `createdAt` (`Timestamp`)
@@ -280,8 +320,9 @@ The shared typed development fixture contains the Sunday Service journey, both
 locations and ordered legs, one shuttle and driver, representative guest riders,
 independent waitlists and comments, every route status, normalized tracking
 updates, routing snapshots, and an arrival-event clearing scenario. The UI and
-mock state engine consume it directly; Feature 7 provides a repeatable path that
-seeds the same relationships into Convex.
+mock state engine consume it directly. Feature 3a adds the Union Organization,
+role-based Users, organization ownership, and active-driver relationship before
+Feature 7 seeds the same relationships into Convex.
 
 ## State and provider boundaries
 
@@ -317,8 +358,8 @@ Tracking provider
 - **pnpm 10.16.0** - package manager.
 - **Node.js 20.9.0 or newer** - runtime required by Next.js 16.
 
-There is no unit test runner, combined Verify command, or automatic GitHub check
-configured yet.
+Vitest is configured for unit tests. There is no combined Verify command or
+automatic GitHub check configured yet.
 
 ## Monetization
 
@@ -334,9 +375,10 @@ waitlist, and pickup availability. Tracking, geofencing, and provider mechanics
 stay out of rider-facing language.
 
 - **View 1, journey overview (route path `> TODO`)** - the functional Sunday
-  Service experience with welcome and journey selection, two state-colored route
-  cards, driver identity, status pills, consolidated timing/progress, waitlist
-  previews, and pickup controls.
+  Service experience with the current Organization image or initials beside the
+  separate `Shuttle Tracker` label, welcome and journey selection, two
+  state-colored route cards, driver identity, status pills, consolidated
+  timing/progress, waitlist previews, and pickup controls.
 - **View 2, route detail preview (route path `> TODO`)** - a feature-flagged,
   nonfunctional rendering of rider profile context, route metrics, map treatment,
   shuttle position, waitlist, and driver card. It is visible during development
@@ -380,7 +422,6 @@ the current guest is already waiting, and exposes no pickup action during
 - What mechanism supplies AirTag data to the tracking-provider adapter?
 - Should Feature 7 physically delete cleared waitlist entries and comments or
   archive them outside the active route-leg lists?
-- What distance unit should stored geofence radii use?
 - What bounded retention periods should location updates and routing snapshots
   use?
 - Which runtime validation library should enforce domain and provider boundaries?

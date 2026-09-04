@@ -5,6 +5,7 @@ export type EntityId<TEntity extends string> = string & {
 };
 
 export type UserId = EntityId<"User">;
+export type OrganizationId = EntityId<"Organization">;
 export type JourneyId = EntityId<"Journey">;
 export type RouteLegId = EntityId<"RouteLeg">;
 export type LocationId = EntityId<"Location">;

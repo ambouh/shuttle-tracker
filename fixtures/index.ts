@@ -5,6 +5,7 @@ export {
   OUTBOUND_ARRIVAL_SCENARIO,
 } from "./arrival-scenario";
 export { FIXTURE_IDS } from "./ids";
+export { UNION_ORGANIZATION } from "./organization";
 export {
   CURRENT_TRACKING_SHUTTLE,
   DEPARTING_SCENARIO,

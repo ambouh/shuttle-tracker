@@ -21,6 +21,10 @@ describe("Sunday Service operational scenarios", () => {
     for (const [status, scenario] of Object.entries(ROUTE_STATUS_SCENARIOS)) {
       expect(scenario.routeLegs[0].status).toBe(status);
       expect(scenario.routeLegs).toHaveLength(2);
+      expect(scenario.shuttle.organizationId).toBe(FIXTURE_IDS.organization);
+      expect(scenario.shuttle.activeDriverId).toBe(
+        FIXTURE_IDS.users.johnSmith,
+      );
     }
   });
 

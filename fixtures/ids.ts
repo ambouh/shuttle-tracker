@@ -2,6 +2,7 @@ import type {
   JourneyId,
   LocationId,
   LocationUpdateId,
+  OrganizationId,
   RouteLegCommentId,
   RouteLegId,
   ShuttleId,
@@ -10,6 +11,7 @@ import type {
 } from "@/types/domain";
 
 export const FIXTURE_IDS = {
+  organization: "organization-union-church" as OrganizationId,
   journey: "journey-sunday-service" as JourneyId,
   locations: {
     unionChurch: "location-union-church" as LocationId,
