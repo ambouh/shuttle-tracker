@@ -125,7 +125,5 @@ Requires Node.js 20.9.0 or newer and pnpm 10.16.0.
 - Build: `pnpm build`
 - Production server: `pnpm start`
 - Lint: `pnpm lint`
-
-Testing is opt-in. If this project does not already have a unit test runner, run
-`/tests` or `$tests` to add one and update this section with the real test
-commands.
+- Test: `pnpm test`
+- Test watch mode: `pnpm test:watch`

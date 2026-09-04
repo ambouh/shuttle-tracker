@@ -127,8 +127,9 @@ of the switch; the skills and `ai-interaction.md` only point back here.
 - Run them via the project's test command (see Commands in `AGENTS.md`), not a
   hardcoded tool name.
 
-No unit test runner or `test` script is configured yet, so tests are not currently
-an automated gate. Run `/tests` or `$tests` when unit testing should be added.
+Vitest is configured for TypeScript unit tests. Run the complete suite with
+`pnpm test` or use `pnpm test:watch` during development. Tests are an automated
+gate for logic-bearing steps under the rules above.
 
 ## Package Management and Commands
 
