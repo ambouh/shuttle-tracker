@@ -38,6 +38,8 @@ export interface RouteLeg {
   name: string;
   departureLocationId: LocationId;
   arrivalLocationId: LocationId;
+  scheduledDepartureAt: Timestamp;
+  scheduledArrivalAt: Timestamp;
   status: RouteStatus;
   departureGeofenceRadius: DistanceMeters;
   arrivalGeofenceRadius: DistanceMeters;

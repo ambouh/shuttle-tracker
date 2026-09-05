@@ -8,6 +8,7 @@ export interface User {
   firstName: string;
   lastName: string;
   phoneNumber: string | null;
+  profileImageUrl: string | null;
   role: UserRole;
   createdAt: Timestamp;
   updatedAt: Timestamp;

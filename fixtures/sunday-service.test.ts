@@ -8,6 +8,29 @@ import {
 } from "./sunday-service";
 
 describe("canonical Sunday Service fixture", () => {
+  it("keeps the approved Sunday Service schedule in Eastern time", () => {
+    const timeFormatter = new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "America/New_York",
+    });
+    const displayTimes = SUNDAY_SERVICE_FIXTURE.routeLegs.flatMap(
+      ({ scheduledArrivalAt, scheduledDepartureAt }) => [
+        timeFormatter.format(scheduledDepartureAt),
+        timeFormatter.format(scheduledArrivalAt),
+      ],
+    );
+
+    expect(displayTimes).toEqual(["09:00", "09:45", "10:15", "11:00"]);
+    expect(
+      SUNDAY_SERVICE_FIXTURE.routeLegs.every(
+        ({ scheduledArrivalAt, scheduledDepartureAt }) =>
+          scheduledArrivalAt > scheduledDepartureAt,
+      ),
+    ).toBe(true);
+  });
+
   it("places the journey and its operational entities under Union", () => {
     const { journey, locations, shuttle } = SUNDAY_SERVICE_FIXTURE;
 
