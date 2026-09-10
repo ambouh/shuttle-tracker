@@ -1,7 +1,4 @@
-import { Bus } from "lucide-react";
-
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
+import { RouteProgress } from "@/components/shuttle/RouteProgress";
 
 interface RouteTimingProps {
   departureTime: string;
@@ -49,37 +46,11 @@ export function RouteTiming({
         <p className="mb-ui-3 truncate text-center text-ui-base text-text-muted">
           {timingMessage}
         </p>
-        <div className="relative my-ui-2 h-progress">
-          <Progress
-            className="block size-full gap-0"
-            trackClassName="h-progress bg-border-soft"
-            indicatorClassName={cn(
-              "bg-accent-strong",
-              active && "animate-trip-pulse",
-            )}
-            value={progressPercent}
-            aria-label="Route progress"
-          />
-          <span
-            className={cn(
-              "absolute top-1/2 size-ui-7 -translate-x-1/2 -translate-y-1/2",
-              getMarkerPosition(progressPercent),
-            )}
-            aria-hidden="true"
-          >
-            <span
-              className={cn(
-                "grid size-full place-items-center rounded-full",
-                active
-                  ? "bg-accent text-accent-deep"
-                  : "bg-status-idle text-foreground",
-                active && "animate-trip-marker",
-              )}
-            >
-              <Bus className="size-4 stroke-[2.25]" />
-            </span>
-          </span>
-        </div>
+        <RouteProgress
+          progressPercent={progressPercent}
+          active={active}
+          markerPositionClassName={getMarkerPosition(progressPercent)}
+        />
       </div>
 
       <div className="flex flex-col gap-ui-1 text-right max-[36rem]:col-start-2 max-[36rem]:row-start-1">

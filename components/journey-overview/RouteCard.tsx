@@ -1,6 +1,5 @@
-import { ArrowRight } from "lucide-react";
-
 import { Card } from "@/components/ui/card";
+import { RouteDirection } from "@/components/shuttle/RouteDirection";
 import type { RouteCardViewModel } from "@/lib/journey-overview";
 import { cn } from "@/lib/utils";
 
@@ -27,13 +26,14 @@ export function RouteCard({ route }: RouteCardProps) {
       >
         <header
           className={cn(
-            "grid min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-ui-2 px-ui-5 py-ui-2 text-center text-ui-lg",
+            "px-ui-5 py-ui-2 text-ui-lg",
             active ? "text-status-active-foreground" : "text-foreground",
           )}
         >
-          <span className="truncate">{route.departureName}</span>
-          <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
-          <span className="truncate">{route.arrivalName}</span>
+          <RouteDirection
+            departureName={route.departureName}
+            arrivalName={route.arrivalName}
+          />
         </header>
 
         <div className="m-ui-1 mt-0 min-w-0 rounded-[calc(var(--radius-lg)-var(--spacing-ui-1))] bg-surface-raised px-ui-6 pt-ui-6 max-[36rem]:px-ui-4 max-[36rem]:pt-ui-5">

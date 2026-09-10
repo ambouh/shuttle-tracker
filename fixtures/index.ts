@@ -19,6 +19,11 @@ export {
 } from "./operational-scenarios";
 export type { SundayServiceOperationalScenario } from "./operational-scenarios";
 export { REFERENCE_TIMESTAMPS } from "./reference-time";
+export { ROUTE_DETAIL_PREVIEW_SCENARIO } from "./route-detail-preview";
+export type {
+  NormalizedMapPoint,
+  RouteDetailPreviewScenario,
+} from "./route-detail-preview";
 export {
   OUTBOUND_COMMENTS,
   OUTBOUND_ROUTE_LEG,
