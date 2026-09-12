@@ -32,7 +32,7 @@ export interface JourneyOverviewInput {
   users: readonly User[];
   shuttle: Shuttle;
   routingSnapshots: readonly RoutingSnapshot[];
-  currentRiderId: UserId;
+  currentRiderId: UserId | null;
 }
 
 export interface PersonViewModel {
@@ -65,6 +65,7 @@ export interface RouteCardViewModel {
   waitlistAvatars: WaitlistAvatarViewModel[];
   waitlistCopy: string;
   pickupEligible: boolean;
+  currentRiderWaiting: boolean;
 }
 
 export interface JourneyOverviewViewModel {
@@ -144,14 +145,21 @@ function getProgressPercent(
   );
 }
 
-function getWaitlistCopy(status: RouteStatus, count: number): string {
-  const people = count === 1 ? "person" : "people";
-
-  if (status === "IN_TRANSIT") {
-    return `${count} ${people} picked up`;
-  }
-
-  return `${count} ${people} waiting to be picked up`;
+function getWaitlistCopy(
+  routeLeg: RouteLeg,
+  users: readonly User[],
+  currentRiderId: UserId | null,
+): string {
+  const count = routeLeg.waitlist.length;
+  const inTransit = routeLeg.status === "IN_TRANSIT";
+  if (!count) return inTransit ? "No riders picked up" : "No one waiting for pickup";
+  const includesYou = routeLeg.waitlist.some(entry => entry.userId === currentRiderId);
+  const firstRider = users.find(user => user.id === routeLeg.waitlist[0].userId);
+  const name = includesYou ? "You" : firstRider?.firstName.trim() || "A rider";
+  const others = count - 1;
+  const subject = others ? `${name} and ${others} ${others === 1 ? "other" : "others"}` : name;
+  if (inTransit) return `${subject} picked up`;
+  return `${subject} ${includesYou || others ? "are" : "is"} waiting for pickup`;
 }
 
 function buildRouteCard(
@@ -206,8 +214,9 @@ function buildRouteCard(
     timingMessage: getTimingMessage(routeLeg.status, routingSnapshot),
     progressPercent: getProgressPercent(routingSnapshot),
     waitlistAvatars,
-    waitlistCopy: getWaitlistCopy(routeLeg.status, waitlistAvatars.length),
+    waitlistCopy: getWaitlistCopy(routeLeg, input.users, input.currentRiderId),
     pickupEligible: routeLeg.status !== "IN_TRANSIT",
+    currentRiderWaiting: routeLeg.waitlist.some(entry => entry.userId === input.currentRiderId),
   };
 }
 

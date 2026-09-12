@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
 import { RouteDirection } from "@/components/shuttle/RouteDirection";
 import type { RouteCardViewModel } from "@/lib/journey-overview";
@@ -9,9 +10,11 @@ import { WaitlistPreview } from "./WaitlistPreview";
 
 interface RouteCardProps {
   route: RouteCardViewModel;
+  pickupAction?: ReactNode;
+  children?: ReactNode;
 }
 
-export function RouteCard({ route }: RouteCardProps) {
+export function RouteCard({ route, pickupAction, children }: RouteCardProps) {
   const active = route.tone === "active";
 
   return (
@@ -71,7 +74,9 @@ export function RouteCard({ route }: RouteCardProps) {
             avatars={route.waitlistAvatars}
             copy={route.waitlistCopy}
             pickupEligible={route.pickupEligible}
+            pickupAction={pickupAction}
           />
+          {children}
         </div>
       </Card>
     </article>

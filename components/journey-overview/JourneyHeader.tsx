@@ -44,9 +44,9 @@ export function JourneyHeader({ model }: JourneyHeaderProps) {
         >
           Your Journey
         </h2>
-        <div className="relative min-w-0 shrink max-[36rem]:max-w-[10rem]">
+        <div className="relative shrink-0">
           <select
-            className="h-control w-full appearance-none rounded-pill border border-border bg-transparent py-0 pr-10 pl-ui-6 text-ui-base outline-none focus-visible:ring-2 focus-visible:ring-ring max-[36rem]:pl-ui-4"
+            className="h-control min-w-[10rem] appearance-none rounded-pill border border-border bg-transparent py-0 pr-8 pl-ui-3 text-ui-sm outline-none focus-visible:ring-2 focus-visible:ring-ring min-[36rem]:pr-10 min-[36rem]:pl-ui-6 min-[36rem]:text-ui-base"
             aria-label="Journey"
             defaultValue={model.journeyId}
           >

@@ -1,14 +1,12 @@
-import { JourneyHeader } from "@/components/journey-overview/JourneyHeader";
-import { RouteCard } from "@/components/journey-overview/RouteCard";
+import { GuestJourneyOverview } from "@/components/guest-pickup/GuestJourneyOverview";
 import {
-  JOSH_WILLIAMS,
   ROUTING_SNAPSHOTS,
   SUNDAY_SERVICE_FIXTURE,
   UNION_ORGANIZATION,
 } from "@/fixtures";
-import { buildJourneyOverviewViewModel } from "@/lib/journey-overview";
+import type { JourneyOverviewInput } from "@/lib/journey-overview";
 
-const journeyOverview = buildJourneyOverviewViewModel({
+const journeyInput = {
   organization: UNION_ORGANIZATION,
   journey: SUNDAY_SERVICE_FIXTURE.journey,
   routeLegs: SUNDAY_SERVICE_FIXTURE.routeLegs,
@@ -16,16 +14,12 @@ const journeyOverview = buildJourneyOverviewViewModel({
   users: SUNDAY_SERVICE_FIXTURE.users,
   shuttle: SUNDAY_SERVICE_FIXTURE.shuttle,
   routingSnapshots: ROUTING_SNAPSHOTS,
-  currentRiderId: JOSH_WILLIAMS.id,
-});
+} satisfies Omit<JourneyOverviewInput, "currentRiderId">;
 
 export default function Home() {
   return (
     <main className="app-canvas">
-      <JourneyHeader model={journeyOverview} />
-      {journeyOverview.routeCards.map((route) => (
-        <RouteCard key={route.id} route={route} />
-      ))}
+      <GuestJourneyOverview input={journeyInput} />
     </main>
   );
 }
