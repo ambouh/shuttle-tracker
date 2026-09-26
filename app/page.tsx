@@ -1,10 +1,18 @@
 import { GuestJourneyOverview } from "@/components/guest-pickup/GuestJourneyOverview";
 import {
   ROUTING_SNAPSHOTS,
+  NORMALIZED_LOCATION_UPDATES,
   SUNDAY_SERVICE_FIXTURE,
   UNION_ORGANIZATION,
 } from "@/fixtures";
 import type { JourneyOverviewInput } from "@/lib/journey-overview";
+import type { MockRoutePreset } from "@/types/mock-journey";
+
+const routePresets: MockRoutePreset[] = ROUTING_SNAPSHOTS.map((routingSnapshot, index) => ({
+  routeLegId: routingSnapshot.routeLegId,
+  routingSnapshot,
+  locationUpdate: NORMALIZED_LOCATION_UPDATES[index],
+}));
 
 const journeyInput = {
   organization: UNION_ORGANIZATION,
@@ -19,7 +27,7 @@ const journeyInput = {
 export default function Home() {
   return (
     <main className="app-canvas">
-      <GuestJourneyOverview input={journeyInput} />
+      <GuestJourneyOverview input={journeyInput} routePresets={routePresets} />
     </main>
   );
 }

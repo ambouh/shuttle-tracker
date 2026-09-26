@@ -147,6 +147,22 @@ it("keeps membership visible while transit locks pickup changes", () => {
 });
 
 it.each([
+  [1, true, "You were picked up"],
+  [2, true, "You and 1 other picked up"],
+  [1, false, "Faith was picked up"],
+  [2, false, "Faith and 1 other picked up"],
+])("uses complete in-transit grammar for %s riders: %s", (count, includesYou, copy) => {
+  const input = getInput();
+  const leg = input.routeLegs[0];
+  const model = buildJourneyOverviewViewModel({
+    ...input,
+    currentRiderId: includesYou ? leg.waitlist[0].userId : null,
+    routeLegs: [{ ...leg, waitlist: leg.waitlist.slice(0, count) }, input.routeLegs[1]],
+  });
+  expect(model.routeCards[0].waitlistCopy).toBe(copy);
+});
+
+it.each([
   [0, false, "No one waiting for pickup"],
   [1, false, "Maya is waiting for pickup"],
   [2, false, "Maya and 1 other are waiting for pickup"],

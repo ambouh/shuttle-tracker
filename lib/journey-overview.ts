@@ -158,7 +158,10 @@ function getWaitlistCopy(
   const name = includesYou ? "You" : firstRider?.firstName.trim() || "A rider";
   const others = count - 1;
   const subject = others ? `${name} and ${others} ${others === 1 ? "other" : "others"}` : name;
-  if (inTransit) return `${subject} picked up`;
+  if (inTransit) {
+    if (others) return `${subject} picked up`;
+    return `${subject} ${includesYou ? "were" : "was"} picked up`;
+  }
   return `${subject} ${includesYou || others ? "are" : "is"} waiting for pickup`;
 }
 
