@@ -2,6 +2,9 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+For this project's pnpm commands and Convex Cloud configuration, see the
+[development guide](convex/README.md).
+
 First, run the development server:
 
 ```bash

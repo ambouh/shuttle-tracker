@@ -65,7 +65,22 @@ require the rider to enter their name again.
    typed mock data.
 7. **Live journey data** - derive the Convex schema from domain contracts, seed
    development data from the fixtures, and synchronize operational state,
-   waitlists, and separately stored route-cycle comments.
+   waitlists, and separately stored route-cycle comments in four sub-features:
+   - **7a Convex foundation and seed** - establish tenant-aware storage,
+     validated relationships and indexes, and repeatable fixture seeding that
+     preserves existing activity.
+   - **7b Real-time journey reads** - add scoped subscriptions and public rider
+     projections in an opt-in read-only live View 1, with loading, empty, error,
+     and disconnected states. Keep the working demo until live writes exist;
+     never replace unavailable live data with fixture riders.
+   - **7c Secure guest waitlist mutations** - create backend guests on first
+     pickup, migrate local contact details to an opaque recognition credential,
+     and authorize concurrent-safe, idempotent join/leave operations before
+     enabling live pickup controls.
+   - **7d Live operational state and route-cycle comments** - persist controlled
+     status, tracking, routing, and atomic arrival updates plus active-cycle
+     comments. Operational mutations require privilege; automatic geofencing
+     remains Feature 11.
 8. **Tracking foundation** - normalize shuttle location behind a provider-neutral
    interface that keeps the shuttle as the tracked entity, maintains its current
    snapshot, and bounds any retained update history.
@@ -159,7 +174,11 @@ Tenant-controlled colors and typography are deferred.
 A guest has a null organization ID; a rider, driver, or admin has one
 organization ID. A User may own many `WaitlistEntry` and `RouteLegComment`
 records. Feature 5 owns the device-local subset used to recognize a guest, and
-future authentication features own provider links.
+Feature 7c migrates its contact data to Convex on first live pickup. The browser
+then retains an opaque recognition credential. Public rider subscriptions
+expose an explicit display projection without guest contact details; a supplied
+user ID alone does not authorize private reads or writes. Future authentication
+features own provider links.
 
 ### Shuttle
 
@@ -324,6 +343,12 @@ mock state engine consume it directly. Feature 3a adds the Union Organization,
 role-based Users, organization ownership, and active-driver relationship before
 Feature 7 seeds the same relationships into Convex.
 
+Feature 7a seeds a development database explicitly. A rerun preserves existing
+activity, including cleared memberships. Fixtures are sample datasets for
+development and tests; they do not replace live riders when Convex is unavailable.
+Feature 7b keeps demo and live data modes explicit, with live pickup controls
+disabled until Feature 7c supplies their backend mutations.
+
 ## State and provider boundaries
 
 ```text
@@ -419,6 +444,13 @@ the current guest is already waiting, and exposes no pickup action during
 
 ## Open questions
 
+- Plan drift: the original project plan describes a name-only local guest,
+  whereas completed Feature 5 also collects a phone number and approved Feature
+  7c migrates contact data to Convex. Use the archived Feature 5 contract and
+  current domain types when specifying that migration.
+- The original plans still reference prototypes and leave screen paths and the
+  preview flag unnamed. Completed UI feature archives record those implementation
+  decisions; do not rebuild the screens or restore discarded prototypes.
 - What mechanism supplies AirTag data to the tracking-provider adapter?
 - Should Feature 7 physically delete cleared waitlist entries and comments or
   archive them outside the active route-leg lists?

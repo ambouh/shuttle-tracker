@@ -127,3 +127,7 @@ Requires Node.js 20.9.0 or newer and pnpm 10.16.0.
 - Lint: `pnpm lint`
 - Test: `pnpm test`
 - Test watch mode: `pnpm test:watch`
+- Convex development sync: `pnpm convex:dev` (uses the development deployment in `.env.local`)
+- Convex one-time sync: `pnpm convex:dev --once`
+- Convex generated bindings: `pnpm convex:codegen`
+- Convex typecheck: `pnpm convex:typecheck`

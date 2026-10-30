@@ -53,6 +53,7 @@
 
 - Components: PascalCase (`ItemCard.tsx`)
 - Files: Match component name or kebab-case
+- Convex backend modules: use camelCase or underscores; Convex rejects hyphens in module paths
 - Functions: camelCase
 - Constants: SCREAMING_SNAKE_CASE
 - Types/Interfaces: PascalCase (no prefix)
