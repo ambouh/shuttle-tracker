@@ -39,8 +39,22 @@ Start the Next.js frontend in one terminal:
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). View 1 currently uses the
-working fixture demo. Live subscriptions will be connected in Feature 7b.
+Open [http://localhost:3000](http://localhost:3000). View 1 defaults to the
+working fixture demo. To subscribe to the existing development database, start
+the frontend with an explicit live mode:
+
+```bash
+JOURNEY_DATA_MODE=live pnpm dev
+```
+
+Alternatively, add `JOURNEY_DATA_MODE=live` to `.env.local` and restart the dev
+server. Keep the existing `NEXT_PUBLIC_CONVEX_URL`. Use `demo` or remove the mode
+setting to return to the demo. Unknown modes or invalid live URLs show an
+unavailable message; they never fall back to fixture riders.
+
+The production homepage is prerendered, so set the mode and public URL before
+`pnpm build`. Changing them only when running `pnpm start` does not switch an
+already-built homepage.
 
 In a second terminal, watch and sync backend changes:
 
@@ -55,8 +69,9 @@ pnpm convex:dev --once
 ```
 
 Stopping the CLI stops watching local files. The cloud backend keeps running and
-retains its data. The frontend continues using fixtures until Feature 7b, and
-`pnpm build` does not need Convex credentials or a live backend connection.
+retains its data. Live mode subscribes directly to that cloud backend, even when
+the CLI watcher is stopped. The frontend build does not query Convex or require
+Convex administration credentials.
 
 ## Generated types and checks
 
@@ -215,3 +230,177 @@ browser clients cannot. Backend environment variables are separate from the
 frontend's variables; see [Convex environment variables](https://docs.convex.dev/production/environment-variables).
 Production deployment is a separate workflow. Do not use `convex deploy`
 or `--prod` for these steps.
+
+## Public journey reads
+
+`journeys:getOverview` is a read-only public query. Its arguments are
+`organizationSlug` and an optional `journeyId`. It returns `ready` with a
+`snapshot`, `empty` for an active organization without active journeys, or
+`unavailable` for an invalid selection or unreadable stored relationship.
+Unexpected handler failures expose only `JOURNEY_READ_FAILED`.
+
+Try the selected development deployment:
+
+```bash
+pnpm exec convex run journeys:getOverview '{"organizationSlug":"union-church"}' --deployment formal-giraffe-877
+```
+
+The snapshot includes ordered legs, current-cycle waitlists/comments, referenced
+people, endpoint locations, the assigned shuttle, and available routing data.
+Every record is explicitly projected and checked against a runtime return
+validator. Person records contain only `id`, `firstName`, `lastInitial`, and
+`profileImageUrl`. Private user fields and database metadata are omitted.
+Returned IDs preserve their native string values under the domain ID types;
+the reader validates the requested journey ID and ownership before projection.
+User-authored comment text is preserved, not automatically scrubbed for contact
+information someone may have typed into it.
+
+Verified on `formal-giraffe-877`: CLI and anonymous HTTP reads returned the same
+snapshot, including 2 legs, 2 locations, 8 referenced people, 6 memberships,
+2 comments, and 2 routing snapshots. Unknown organization and malformed journey
+selections returned `unavailable`. Deployment metadata lists one public Query,
+`journeys.js:getOverview`; the seed remains internal. Verification did not write
+database records or enable seeding. Historical snapshot timestamps remain intact.
+
+Focused tests: `pnpm test convex/journeys.test.ts` (33 tests). The complete suite
+passed 427 tests; root/backend typechecks, lint, and the production build passed.
+The generated client reference is `api.journeys.getOverview`.
+
+## Live View 1 (Feature 7b)
+
+Completed behavior and verification results are recorded in the
+[Feature 7b archive](../blueprint/history/features/07b-real-time-journey-reads.md).
+The `/private/tmp` paths below identify temporary verification artifacts, which
+may be cleared; the archived observations and manual instructions remain.
+
+`app/page.tsx` selects the mode. Only the demo branch loads
+`DemoJourneyOverview`, which supplies fixtures to the existing guest/mock flow.
+The live branch mounts `LiveJourneyProvider` and `LiveJourneyOverview`, using
+the native Convex React client and `useLiveJourney`. That hook subscribes to
+`api.journeys.getOverview` through Convex's stable `useQueries` API, which returns
+query errors as values so this functional component can handle them safely.
+The organization slug is configured in `lib/journey-data-mode.ts`, independently
+of the fixtures. Both modes reuse the existing header and route cards through
+display-only person inputs; live data never becomes a fabricated private User.
+
+Live View 1 is anonymous and read-only. It does not read browser guest identity,
+mount pickup forms, or expose mock lifecycle controls. Transit cards retain
+`Pickup closed`; other cards show `Pickup requests unavailable`. Guest creation
+and live pickup writes belong to 7c. Stored estimates are labeled as recorded,
+and the original location timestamp is shown without pretending it is fresh GPS.
+
+Loading, empty, unavailable, query-error, and disconnected states have explicit
+messages. Two-client updates and recovery are verified below.
+
+Verified at 375px on 2026-10-17: the live page received a real WebSocket query
+result from `formal-giraffe-877`, used its native journey ID, matched an anonymous
+HTTP query, ignored a saved local guest, and sent no mutations. The demo passed
+first pickup, phone formatting, leave/rejoin, arrival, and restored identity
+checks without opening a Convex connection. Neither view had horizontal
+overflow, console errors, or failed requests. No cloud data was changed.
+
+At Step 4, all 453 tests, lint, both typechecks, and the Webpack build passed.
+The Turbopack worker-port failure was later resolved by regenerating its build
+cache; the normal `pnpm build` command remains unchanged and now passes.
+Browser evidence is in `/private/tmp/shuttle-step4-live.json` and
+`/private/tmp/shuttle-step4-demo.json`, with matching PNG screenshots.
+
+### Connection and error handling (Step 5)
+
+`useJourneyConnection` subscribes to the Convex client's connection state and
+browser online/offline events using React's `useSyncExternalStore`. Its server
+snapshot is `connecting`, so prerendering does not open a backend connection.
+The browser's online flag alone does not establish that Convex is reachable.
+An established socket becoming unavailable or a failed initial attempt shows a
+disconnected state. This does not change shuttle tracking status or timestamps.
+
+During a disconnect, Convex retains the query's last received result in memory.
+If it is a ready journey, the screen keeps those cards with an outdated-data
+notice. Without a ready result, it shows a connection message with no substitute
+riders. Nothing is copied to localStorage, and a newer empty, unavailable, or
+failed result removes the old cards.
+
+Convex reconnects automatically. Query failures and unavailable results offer
+`Try again`, which briefly unsubscribes and then starts a fresh query. Error
+messages, stacks, and attached data never enter the display state. Browser
+logging for this public Convex client is disabled to prevent development query
+details from appearing in the console; backend diagnostics remain separate.
+
+Verified on 2026-10-17: all 471 tests, lint, root/backend typechecks, and
+`JOURNEY_DATA_MODE=live pnpm build --webpack` passed. A Chrome check at 375px
+covered loading, empty, unavailable, query errors, retry, loss of connectivity
+with retained data, first-load disconnection without data, and automatic recovery
+without a reload. No private test error strings reached the DOM or console;
+no pickup forms, mutation calls, or horizontal overflow were observed.
+
+The error/empty/loading cases used temporary browser-only interception of query
+responses; disconnect checks used actual browser offline/online changes. This
+did not modify cloud records or add test endpoints or app flags. Evidence:
+`/private/tmp/shuttle-step5-states.json` and matching
+`/private/tmp/shuttle-step5-*.png` screenshots. The test scripts are
+`/private/tmp/shuttle-step5-check.cjs` and `/private/tmp/shuttle-step5-socket.js`.
+
+To try connection recovery manually, open live mode, wait for the cards, then
+select Offline in browser developer tools and wait for the connection notice.
+Restore the network: the notice clears automatically and the subscription
+continues. Reloading while offline may prevent the application shell itself
+from loading; offline shell caching is the later PWA feature.
+
+References: [Convex useQueries](https://docs.convex.dev/api/modules/react#usequeries)
+and [Convex client connection subscriptions](https://docs.convex.dev/api/classes/react.ConvexReactClient#subscribetoconnectionstate).
+
+### Two-client subscription verification (Step 6)
+
+Two separate Chrome pages at 375px received real development updates without
+reloading. The active leg was temporarily changed through `NOT_STARTED`,
+`DEPARTING`, and `IN_TRANSIT` using Convex's existing administrative document-edit
+operation. Both pages updated their status, waiting/picked-up copy, and pickup
+availability text while keeping all writes disabled.
+
+One page was disconnected while the backend changed from departing to in
+transit. It retained the older cards with an outdated warning while the other
+page updated immediately. Reconnecting delivered the newer state automatically.
+The original status was restored and the entire public snapshot compared equal
+to the original, including memberships, comments, cycles, routing, and historical
+timestamps. No public test mutation or other backend function was added.
+
+Final verification passed all 471 tests, lint, both typechecks, default and live
+Turbopack builds, and the connection/error browser checks repeated against the
+Turbopack output. Demo guest flows and View 2's development/production visibility
+also passed their browser checks.
+
+Evidence: `/private/tmp/shuttle-step6-subscription.json`,
+`/private/tmp/shuttle-step6-{not_started,departing,in_transit}-client{1,2}.png`,
+and `/private/tmp/shuttle-step6-offline-during-update.png`. The temporary check
+script and restoration record are in `/private/tmp/shuttle-step6-subscription-check.cjs`
+and `/private/tmp/shuttle-step6-restore.json`.
+
+To repeat manually:
+
+1. Start `JOURNEY_DATA_MODE=live pnpm dev` and open View 1 in two browser windows.
+2. In the development dashboard linked above, open `routeLegs` and record the
+   selected leg's ID and original `status`.
+3. Edit only that leg's `status` through the three values above. Both windows
+   should update without a refresh. These edits test display subscriptions;
+   they do not simulate arrival or advance the current cycle.
+4. Disconnect one window, make the next status change, then reconnect it. The
+   outdated notice should clear when the new data arrives.
+5. Restore the original status. Memberships, comments, cycles, and timestamps
+   should remain unchanged throughout the check.
+
+See [editing a cell in the Convex dashboard](https://docs.convex.dev/dashboard/deployments/data#editing-a-cell).
+
+### Turbopack build-cache recovery
+
+The normal `pnpm build` and `JOURNEY_DATA_MODE=live pnpm build` now pass, including
+repeat builds with the regenerated cache. The earlier CSS/PostCSS worker-port
+error persisted on retries outside the restricted environment until the old
+`.next/cache/turbopack` directory was moved aside. At the time of the check, the
+old cache was saved to the temporary backup
+`/private/tmp/shuttle-turbopack-cache-before-recheck-20261017`.
+
+If the same failure persists after port permissions are corrected, stop any
+production preview that uses the build output, preserve that build cache under
+an unused backup path, and rerun `pnpm build`. Keep `.next/dev/cache/turbopack`
+separate when a development server is running. No Next.js configuration change,
+cache-disable flag, or Webpack default was needed here.

@@ -45,6 +45,24 @@ export interface CurrentRiderViewModel extends PersonViewModel {
   profileImageUrl: string | null;
 }
 
+export interface JourneyDisplayPerson extends CurrentRiderViewModel {
+  id: UserId;
+}
+
+export interface JourneyPresentationInput {
+  organization: Pick<Organization, "details">;
+  journey: Pick<Journey, "id" | "name" | "routeLegIds">;
+  routeLegs: readonly Pick<RouteLeg,
+    "id" | "departureLocationId" | "arrivalLocationId" | "status" |
+    "scheduledDepartureAt" | "scheduledArrivalAt" | "waitlist"
+  >[];
+  locations: readonly Pick<Location, "id" | "name">[];
+  users: readonly JourneyDisplayPerson[];
+  shuttle: Pick<Shuttle, "activeDriverId">;
+  routingSnapshots: readonly RoutingSnapshot[];
+  currentRiderId: UserId | null;
+}
+
 export interface WaitlistAvatarViewModel extends PersonViewModel {
   userId: UserId;
   tone: WaitlistAvatarTone;
@@ -87,14 +105,6 @@ const timeFormatter = new Intl.DateTimeFormat("en-US", {
   hour12: false,
   timeZone: EASTERN_TIME_ZONE,
 });
-
-function getDisplayName(user: User): string {
-  return `${user.firstName} ${user.lastName}`.trim();
-}
-
-function getInitials(user: User): string {
-  return `${user.firstName[0] ?? ""}${user.lastName[0] ?? ""}`.toUpperCase();
-}
 
 function getStatusPresentation(status: RouteStatus): {
   label: string;
@@ -146,8 +156,8 @@ function getProgressPercent(
 }
 
 function getWaitlistCopy(
-  routeLeg: RouteLeg,
-  users: readonly User[],
+  routeLeg: JourneyPresentationInput["routeLegs"][number],
+  users: readonly JourneyDisplayPerson[],
   currentRiderId: UserId | null,
 ): string {
   const count = routeLeg.waitlist.length;
@@ -166,8 +176,8 @@ function getWaitlistCopy(
 }
 
 function buildRouteCard(
-  routeLeg: RouteLeg,
-  input: JourneyOverviewInput,
+  routeLeg: JourneyPresentationInput["routeLegs"][number],
+  input: JourneyPresentationInput,
 ): RouteCardViewModel {
   const usersById = new Map(input.users.map((user) => [user.id, user]));
   const locationsById = new Map(
@@ -187,8 +197,8 @@ function buildRouteCard(
       ? [
           {
             userId: user.id,
-            displayName: getDisplayName(user),
-            initials: getInitials(user),
+            displayName: user.displayName,
+            initials: user.initials,
             tone: WAITLIST_TONES[index % WAITLIST_TONES.length],
           },
         ]
@@ -206,7 +216,7 @@ function buildRouteCard(
     driver: activeDriver
       ? {
           displayName: activeDriver.firstName,
-          initials: getInitials(activeDriver),
+          initials: activeDriver.initials,
         }
       : null,
     driverLabel: activeDriver ? "Driver" : "Driver unavailable",
@@ -226,6 +236,21 @@ function buildRouteCard(
 export function buildJourneyOverviewViewModel(
   input: JourneyOverviewInput,
 ): JourneyOverviewViewModel {
+  return buildJourneyPresentation({
+    ...input,
+    users: input.users.map(user => ({
+      id: user.id,
+      firstName: user.firstName,
+      displayName: `${user.firstName} ${user.lastName}`.trim(),
+      initials: `${user.firstName[0] ?? ""}${user.lastName[0] ?? ""}`.toUpperCase(),
+      profileImageUrl: user.profileImageUrl,
+    })),
+  });
+}
+
+export function buildJourneyPresentation(
+  input: JourneyPresentationInput,
+): JourneyOverviewViewModel {
   const currentRider = input.users.find(({ id }) => id === input.currentRiderId);
   const routeLegsById = new Map(
     input.routeLegs.map((routeLeg) => [routeLeg.id, routeLeg]),
@@ -241,8 +266,8 @@ export function buildJourneyOverviewViewModel(
     currentRider: currentRider
       ? {
           firstName: currentRider.firstName,
-          displayName: getDisplayName(currentRider),
-          initials: getInitials(currentRider),
+          displayName: currentRider.displayName,
+          initials: currentRider.initials,
           profileImageUrl: currentRider.profileImageUrl,
         }
       : {

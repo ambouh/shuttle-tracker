@@ -1,33 +1,21 @@
-import { GuestJourneyOverview } from "@/components/guest-pickup/GuestJourneyOverview";
-import {
-  ROUTING_SNAPSHOTS,
-  NORMALIZED_LOCATION_UPDATES,
-  SUNDAY_SERVICE_FIXTURE,
-  UNION_ORGANIZATION,
-} from "@/fixtures";
-import type { JourneyOverviewInput } from "@/lib/journey-overview";
-import type { MockRoutePreset } from "@/types/mock-journey";
+import { LiveJourneyProvider } from "@/components/live-journey/LiveJourneyProvider";
+import { JourneyReadMessage } from "@/components/live-journey/JourneyReadMessage";
+import { LIVE_ORGANIZATION_SLUG, resolveJourneyDataMode } from "@/lib/journey-data-mode";
 
-const routePresets: MockRoutePreset[] = ROUTING_SNAPSHOTS.map((routingSnapshot, index) => ({
-  routeLegId: routingSnapshot.routeLegId,
-  routingSnapshot,
-  locationUpdate: NORMALIZED_LOCATION_UPDATES[index],
-}));
-
-const journeyInput = {
-  organization: UNION_ORGANIZATION,
-  journey: SUNDAY_SERVICE_FIXTURE.journey,
-  routeLegs: SUNDAY_SERVICE_FIXTURE.routeLegs,
-  locations: SUNDAY_SERVICE_FIXTURE.locations,
-  users: SUNDAY_SERVICE_FIXTURE.users,
-  shuttle: SUNDAY_SERVICE_FIXTURE.shuttle,
-  routingSnapshots: ROUTING_SNAPSHOTS,
-} satisfies Omit<JourneyOverviewInput, "currentRiderId">;
-
-export default function Home() {
+export default async function Home() {
+  const config = resolveJourneyDataMode({
+    mode: process.env.JOURNEY_DATA_MODE,
+    convexUrl: process.env.NEXT_PUBLIC_CONVEX_URL,
+  });
+  if (config.mode === "demo") {
+    const { DemoJourneyOverview } = await import("@/components/journey-overview/DemoJourneyOverview");
+    return <main className="app-canvas"><DemoJourneyOverview /></main>;
+  }
   return (
     <main className="app-canvas">
-      <GuestJourneyOverview input={journeyInput} routePresets={routePresets} />
+      {config.mode === "live" ? (
+        <LiveJourneyProvider convexUrl={config.convexUrl} organizationSlug={LIVE_ORGANIZATION_SLUG} />
+      ) : <JourneyReadMessage message="Journey information is unavailable right now." />}
     </main>
   );
 }

@@ -8,7 +8,13 @@
  * @module
  */
 
+import type * as journeyRead from "../journeyRead.js";
+import type * as journeyReadActivity from "../journeyReadActivity.js";
 import type * as journeyValidation from "../journeyValidation.js";
+import type * as journeys from "../journeys.js";
+import type * as publicJourney from "../publicJourney.js";
+import type * as publicJourneyValidators from "../publicJourneyValidators.js";
+import type * as publicPeople from "../publicPeople.js";
 import type * as routeDataValidation from "../routeDataValidation.js";
 import type * as seed from "../seed.js";
 import type * as seedData from "../seedData.js";
@@ -24,7 +30,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  journeyRead: typeof journeyRead;
+  journeyReadActivity: typeof journeyReadActivity;
   journeyValidation: typeof journeyValidation;
+  journeys: typeof journeys;
+  publicJourney: typeof publicJourney;
+  publicJourneyValidators: typeof publicJourneyValidators;
+  publicPeople: typeof publicPeople;
   routeDataValidation: typeof routeDataValidation;
   seed: typeof seed;
   seedData: typeof seedData;
